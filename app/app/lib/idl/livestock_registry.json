@@ -1,0 +1,353 @@
+{
+  "version": "0.1.0",
+  "name": "livestock_registry",
+  "instructions": [
+    {
+      "name": "registerAnimal",
+      "docs": [
+        "Register a new animal with oracle-verified government data.",
+        "The oracle_signature proves the data came from TORTTULIK API."
+      ],
+      "accounts": [
+        {
+          "name": "animalRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "oracle",
+          "isMut": false,
+          "isSigner": true,
+          "docs": [
+            "The oracle that verified the data from TORTTULIK.",
+            "Must be a known oracle keypair (checked by being a signer)."
+          ]
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "govId",
+          "type": "string"
+        },
+        {
+          "name": "breed",
+          "type": "string"
+        },
+        {
+          "name": "birthDate",
+          "type": "i64"
+        },
+        {
+          "name": "weightKg",
+          "type": "u32"
+        },
+        {
+          "name": "sex",
+          "type": {
+            "defined": "AnimalSex"
+          }
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "oracleSignature",
+          "type": "bytes"
+        },
+        {
+          "name": "oracleMessage",
+          "type": "bytes"
+        }
+      ]
+    },
+    {
+      "name": "updateRecord",
+      "docs": [
+        "Update animal record — only owner can call."
+      ],
+      "accounts": [
+        {
+          "name": "animalRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "govId",
+          "type": "string"
+        },
+        {
+          "name": "newWeightKg",
+          "type": {
+            "option": "u32"
+          }
+        },
+        {
+          "name": "vaccination",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "notes",
+          "type": {
+            "option": "string"
+          }
+        }
+      ]
+    },
+    {
+      "name": "transferOwnership",
+      "docs": [
+        "Transfer ownership of an animal to a new owner."
+      ],
+      "accounts": [
+        {
+          "name": "animalRecord",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "owner",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "govId",
+          "type": "string"
+        },
+        {
+          "name": "newOwner",
+          "type": "publicKey"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AnimalRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "govId",
+            "type": "string"
+          },
+          {
+            "name": "breed",
+            "type": "string"
+          },
+          {
+            "name": "birthDate",
+            "type": "i64"
+          },
+          {
+            "name": "weightKg",
+            "type": "u32"
+          },
+          {
+            "name": "sex",
+            "type": {
+              "defined": "AnimalSex"
+            }
+          },
+          {
+            "name": "region",
+            "type": "string"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "cnftAssetId",
+            "type": "publicKey"
+          },
+          {
+            "name": "createdAt",
+            "type": "i64"
+          },
+          {
+            "name": "updatedAt",
+            "type": "i64"
+          },
+          {
+            "name": "vaccinationCount",
+            "type": "u8"
+          },
+          {
+            "name": "isListed",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "AnimalSex",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Male"
+          },
+          {
+            "name": "Female"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "AnimalRegistered",
+      "fields": [
+        {
+          "name": "govId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "breed",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "AnimalUpdated",
+      "fields": [
+        {
+          "name": "govId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "owner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newWeightKg",
+          "type": {
+            "option": "u32"
+          },
+          "index": false
+        },
+        {
+          "name": "vaccination",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        },
+        {
+          "name": "notes",
+          "type": {
+            "option": "string"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "OwnershipTransferred",
+      "fields": [
+        {
+          "name": "govId",
+          "type": "string",
+          "index": false
+        },
+        {
+          "name": "oldOwner",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "newOwner",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "GovIdTooLong",
+      "msg": "Government ID exceeds 30 characters"
+    },
+    {
+      "code": 6001,
+      "name": "BreedTooLong",
+      "msg": "Breed name exceeds 50 characters"
+    },
+    {
+      "code": 6002,
+      "name": "RegionTooLong",
+      "msg": "Region name exceeds 50 characters"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidWeight",
+      "msg": "Invalid weight"
+    },
+    {
+      "code": 6004,
+      "name": "NotOwner",
+      "msg": "Only the owner can perform this action"
+    },
+    {
+      "code": 6005,
+      "name": "SameOwner",
+      "msg": "New owner is the same as current owner"
+    },
+    {
+      "code": 6006,
+      "name": "OracleVerificationFailed",
+      "msg": "Oracle signature verification failed"
+    },
+    {
+      "code": 6007,
+      "name": "AnimalIsListed",
+      "msg": "Animal is currently listed on marketplace"
+    }
+  ],
+  "metadata": {
+    "address": "2k1D6hQqgPpcbJxqwsyfXsD5KLyiXVcLa8xbCguWGDTQ"
+  }
+}

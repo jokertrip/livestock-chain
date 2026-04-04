@@ -1,0 +1,11 @@
+node_modules/
+.next/
+target/
+test-ledger/
+.anchor/
+app/node_modules/
+app/.next/
+*.so
+.DS_Store
+.env
+.env.local

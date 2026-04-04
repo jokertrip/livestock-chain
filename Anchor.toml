@@ -1,0 +1,17 @@
+[features]
+seeds = false
+skip-lint = false
+
+[programs.devnet]
+livestock_registry = "2k1D6hQqgPpcbJxqwsyfXsD5KLyiXVcLa8xbCguWGDTQ"
+marketplace_escrow = "4q2iYDHURLPT1xcU6k74v3G3uKUr1e7MamGyVdq13zqF"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

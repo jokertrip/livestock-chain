@@ -1,0 +1,20 @@
+[package]
+name = "marketplace-escrow"
+version = "0.1.0"
+description = "Livestock marketplace with escrow on Solana"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "marketplace_escrow"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.29.0"
+livestock-registry = { path = "../livestock-registry", features = ["cpi"] }

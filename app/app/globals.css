@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #faf7f0;
+  --foreground: #1a3a2a;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer base {
+  h1, h2, h3 {
+    @apply font-bold text-forest-600;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-forest-500 hover:bg-forest-600 text-white font-medium py-2.5 px-5 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-steppe-100 hover:bg-steppe-200 text-forest-600 font-medium py-2.5 px-5 rounded-lg border border-steppe-300 transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-steppe-100 p-5;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2.5 rounded-lg border border-steppe-200 bg-white text-forest-700 placeholder:text-steppe-400 focus:outline-none focus:ring-2 focus:ring-forest-400 focus:border-transparent transition-all;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-healthy {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-observation {
+    @apply badge bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-quarantine {
+    @apply badge bg-red-100 text-red-800;
+  }
+}

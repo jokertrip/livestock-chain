@@ -1,0 +1,22 @@
+{
+  "name": "livestock-chain",
+  "version": "0.1.0",
+  "description": "Livestock tracking and trading platform for Kazakhstan with Solana on-chain verification",
+  "scripts": {
+    "test": "anchor test",
+    "mock-api": "npx json-server --watch mock-api/db.json --port 3001"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.29.0",
+    "@solana/web3.js": "^1.87.0",
+    "json-server": "^0.17.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.0.0"
+  }
+}
