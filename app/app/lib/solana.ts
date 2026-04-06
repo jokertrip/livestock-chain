@@ -44,14 +44,10 @@ export function getServerKeypair(): Keypair {
   return _keypair;
 }
 
-let _oracleKeypair: Keypair | null = null;
-
 export function getOracleKeypair(): Keypair {
-  if (_oracleKeypair) return _oracleKeypair;
-  // For hackathon: oracle = separate keypair stored alongside server keypair
-  // In real system this would be a secure HSM-backed key
-  _oracleKeypair = Keypair.generate();
-  return _oracleKeypair;
+  // For hackathon: oracle uses same keypair as server (has SOL for fees)
+  // In production this would be a separate secure HSM-backed key
+  return getServerKeypair();
 }
 
 export function getExplorerUrl(txHash: string): string {

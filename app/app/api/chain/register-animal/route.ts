@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
         oracle: oracleKeypair.publicKey,
         systemProgram: web3.SystemProgram.programId,
       })
-      .signers([serverKeypair, oracleKeypair])
+      .signers([serverKeypair])
       .rpc();
 
     // Mint $LIVESTOCK reward (10 tokens per registration)
