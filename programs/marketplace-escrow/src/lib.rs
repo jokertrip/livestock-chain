@@ -60,10 +60,11 @@ pub mod marketplace_escrow {
             listing.status == ListingStatus::Active,
             EscrowError::InvalidListingStatus
         );
-        require!(
-            ctx.accounts.buyer.key() != listing.seller,
-            EscrowError::SellerCannotBuy
-        );
+        // Note: seller == buyer check disabled for hackathon demo (single wallet)
+        // require!(
+        //     ctx.accounts.buyer.key() != listing.seller,
+        //     EscrowError::SellerCannotBuy
+        // );
 
         // Transfer SOL from buyer to vault PDA
         let transfer_amount = listing.price_lamports;
