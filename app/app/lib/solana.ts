@@ -23,9 +23,15 @@ export function getServerKeypair(): Keypair {
   const envKey = process.env.SOLANA_PRIVATE_KEY;
   if (envKey) {
     try {
-      _keypair = Keypair.fromSecretKey(bs58.decode(envKey));
+      const decoded = bs58.decode(envKey);
+      _keypair = Keypair.fromSecretKey(decoded);
+      console.log("Loaded keypair from env:", _keypair.publicKey.toBase58());
       return _keypair;
-    } catch {}
+    } catch (e) {
+      console.error("Failed to decode SOLANA_PRIVATE_KEY:", e);
+    }
+  } else {
+    console.warn("SOLANA_PRIVATE_KEY not set");
   }
 
   // Try local Solana CLI keypair
