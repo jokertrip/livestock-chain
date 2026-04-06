@@ -1,7 +1,32 @@
 import { Connection, Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
 import fs from "fs";
 import path from "path";
+
+// Base58 decode without external dependency
+const BASE58_ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+function base58Decode(str: string): Uint8Array {
+  const bytes: number[] = [0];
+  for (const char of str) {
+    const idx = BASE58_ALPHABET.indexOf(char);
+    if (idx === -1) throw new Error(`Invalid base58 character: ${char}`);
+    for (let j = 0; j < bytes.length; j++) bytes[j] *= 58;
+    bytes[0] += idx;
+    for (let j = 0; j < bytes.length - 1; j++) {
+      bytes[j + 1] += (bytes[j] >> 8);
+      bytes[j] &= 0xff;
+    }
+    while (bytes[bytes.length - 1] > 255) {
+      bytes.push(bytes[bytes.length - 1] >> 8);
+      bytes[bytes.length - 2] &= 0xff;
+    }
+  }
+  // Leading zeros
+  let leadingZeros = 0;
+  for (const char of str) { if (char === '1') leadingZeros++; else break; }
+  const result = new Uint8Array(leadingZeros + bytes.length);
+  for (let i = 0; i < bytes.length; i++) result[leadingZeros + bytes.length - 1 - i] = bytes[i];
+  return result;
+}
 
 const SOLANA_RPC = process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com";
 
@@ -23,7 +48,7 @@ export function getServerKeypair(): Keypair {
   const envKey = process.env.SOLANA_PRIVATE_KEY;
   if (envKey) {
     try {
-      const decoded = bs58.decode(envKey);
+      const decoded = base58Decode(envKey);
       _keypair = Keypair.fromSecretKey(decoded);
       console.log("Loaded keypair from env:", _keypair.publicKey.toBase58());
       return _keypair;
