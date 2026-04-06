@@ -117,8 +117,7 @@ export default function DealPage() {
     setProcessing(true);
     setChainError("");
     try {
-      const price = seededPrice(animal.id);
-      const priceLamports = Math.round((price / 50000) * 1_000_000_000); // tenge to lamports
+      const priceLamports = 10_000_000; // 0.01 SOL — demo price
       const res = await fetch("/api/chain/create-listing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
