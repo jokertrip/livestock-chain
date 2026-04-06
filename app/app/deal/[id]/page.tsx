@@ -31,6 +31,26 @@ interface ChainResult {
   error?: string;
 }
 
+function friendlyError(raw: string): string {
+  if (raw.includes("insufficient lamports") || raw.includes("insufficient funds"))
+    return "Недостаточно средств на кошельке для этой операции";
+  if (raw.includes("AccountNotInitialized"))
+    return "Животное ещё не зарегистрировано на блокчейне. Сначала зарегистрируйте его на странице регистрации.";
+  if (raw.includes("AlreadyListed"))
+    return "Это животное уже выставлено на продажу";
+  if (raw.includes("NotOwner"))
+    return "Только владелец может выполнить эту операцию";
+  if (raw.includes("InvalidListingStatus"))
+    return "Невозможно выполнить операцию в текущем статусе сделки";
+  if (raw.includes("SellerCannotBuy"))
+    return "Продавец не может купить своё животное";
+  if (raw.includes("already in use"))
+    return "Листинг для этого животного уже существует";
+  if (raw.includes("Simulation failed"))
+    return "Транзакция не прошла. Попробуйте позже.";
+  return raw;
+}
+
 function seededPrice(id: string): number {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
@@ -132,7 +152,7 @@ export default function DealPage() {
         setTxHashes((prev) => ({ ...prev, listing: data.tx_hash! }));
         setDealStatus("active");
       } else {
-        setChainError(data.error || "Ошибка создания листинга");
+        setChainError(friendlyError(data.error || "Ошибка создания листинга"));
       }
     } catch {
       setChainError("Ошибка сети");
@@ -155,7 +175,7 @@ export default function DealPage() {
         setTxHashes((prev) => ({ ...prev, deposit: data.tx_hash! }));
         setDealStatus("funded");
       } else {
-        setChainError(data.error || "Ошибка депозита");
+        setChainError(friendlyError(data.error || "Ошибка депозита"));
       }
     } catch {
       setChainError("Ошибка сети");
@@ -178,7 +198,7 @@ export default function DealPage() {
         setTxHashes((prev) => ({ ...prev, confirm: data.tx_hash! }));
         setDealStatus("completed");
       } else {
-        setChainError(data.error || "Ошибка подтверждения");
+        setChainError(friendlyError(data.error || "Ошибка подтверждения"));
       }
     } catch {
       setChainError("Ошибка сети");
