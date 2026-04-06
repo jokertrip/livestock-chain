@@ -182,6 +182,19 @@ export default function RegisterPage() {
         <h2 className="text-lg font-semibold text-forest-600 mb-4">
           Шаг 1: Найти животное в реестре
         </h2>
+        <p className="text-xs text-forest-600/50 mb-3">
+          Введите номер бирки из системы TORTTULIK. Примеры:{" "}
+          {["KZ-AKM-2022-000134", "KZ-KOS-2023-004782", "KZ-ALM-2024-007321"].map((id, i) => (
+            <button
+              key={id}
+              onClick={() => { setGovId(id); }}
+              className="font-mono text-forest-500 hover:underline cursor-pointer"
+              disabled={step !== "search"}
+            >
+              {id}{i < 2 ? ", " : ""}
+            </button>
+          ))}
+        </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
