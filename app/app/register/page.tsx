@@ -37,6 +37,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [txHash, setTxHash] = useState("");
+  const [explorerUrl, setExplorerUrl] = useState("");
+  const [rewardAmount, setRewardAmount] = useState("");
 
   // Autocomplete
   const [allAnimals, setAllAnimals] = useState<{ id: string; breed: string; region: string }[]>([]);
@@ -137,6 +139,8 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error("Ошибка регистрации");
       const data = await res.json();
       setTxHash(data.tx_hash);
+      setExplorerUrl(data.explorer_url || "");
+      setRewardAmount(data.reward?.amount || "");
       setStep("registered");
     } catch {
       setError("Ошибка записи на блокчейн. Попробуйте позже.");
@@ -388,13 +392,29 @@ export default function RegisterPage() {
               Животное успешно записано в реестр Solana
             </p>
           </div>
-          {txHash && (
-            <div className="bg-forest-50 rounded-lg p-4 mb-4">
-              <p className="text-xs font-mono text-forest-600/70 break-all">
-                <span className="font-semibold">TX Hash:</span> {txHash}
+
+          {rewardAmount && (
+            <div className="bg-steppe-50 border border-steppe-200 rounded-lg p-4 mb-4 text-center">
+              <p className="text-forest-700 font-medium">
+                +{rewardAmount} начислено за регистрацию
               </p>
             </div>
           )}
+
+          {txHash && (
+            <div className="bg-forest-50 rounded-lg p-4 mb-4">
+              <p className="text-xs text-forest-600/60 mb-1">Транзакция на Solana:</p>
+              <a
+                href={explorerUrl || `https://explorer.solana.com/tx/${txHash}?cluster=devnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-mono text-forest-500 hover:underline break-all"
+              >
+                {txHash}
+              </a>
+            </div>
+          )}
+
           <Link
             href={`/animal/${encodeURIComponent(animal.id)}`}
             className="btn-secondary w-full inline-block text-center"
