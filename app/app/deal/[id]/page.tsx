@@ -22,7 +22,7 @@ interface Animal {
   last_inspection: string;
 }
 
-type DealStatus = "active" | "funded" | "completed";
+type DealStatus = "not_listed" | "active" | "funded" | "completed";
 
 interface ChainResult {
   success: boolean;
@@ -55,7 +55,7 @@ export default function DealPage() {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [dealStatus, setDealStatus] = useState<DealStatus>("active");
+  const [dealStatus, setDealStatus] = useState<DealStatus>("not_listed");
   const [processing, setProcessing] = useState(false);
   const [txHashes, setTxHashes] = useState<Record<string, string>>({});
   const [chainError, setChainError] = useState("");
@@ -96,6 +96,36 @@ export default function DealPage() {
     };
     const info = map[status] || map.healthy;
     return <span className={info.className}>{info.label}</span>;
+  }
+
+  async function handleCreateListing() {
+    if (!animal) return;
+    setProcessing(true);
+    setChainError("");
+    try {
+      const price = seededPrice(animal.id);
+      const priceLamports = Math.round((price / 50000) * 1_000_000_000); // tenge to lamports
+      const res = await fetch("/api/chain/create-listing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gov_id: id,
+          price_lamports: priceLamports,
+          description: `Продажа: ${animal.breed}, ${animal.weight_kg} кг`,
+        }),
+      });
+      const data: ChainResult = await res.json();
+      if (data.success && data.tx_hash) {
+        setTxHashes((prev) => ({ ...prev, listing: data.tx_hash! }));
+        setDealStatus("active");
+      } else {
+        setChainError(data.error || "Ошибка создания листинга");
+      }
+    } catch {
+      setChainError("Ошибка сети");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function handleBuy() {
@@ -174,6 +204,7 @@ export default function DealPage() {
   const solPrice = tengeToSol(price);
 
   const statusSteps: { key: DealStatus; label: string }[] = [
+    { key: "not_listed", label: "Листинг" },
     { key: "active", label: "Активна" },
     { key: "funded", label: "Оплачено" },
     { key: "completed", label: "Завершена" },
@@ -297,6 +328,22 @@ export default function DealPage() {
             </div>
 
             {/* Deal actions */}
+            {dealStatus === "not_listed" && (
+              <button
+                className="btn-primary w-full text-lg py-3"
+                onClick={handleCreateListing}
+                disabled={processing}
+              >
+                {processing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <LoadingSpinner /> Создание листинга...
+                  </span>
+                ) : (
+                  "Выставить на продажу"
+                )}
+              </button>
+            )}
+
             {dealStatus === "active" && (
               <button
                 className="btn-primary w-full text-lg py-3"
@@ -372,6 +419,19 @@ export default function DealPage() {
             </h3>
             {Object.keys(txHashes).length > 0 ? (
               <div className="space-y-2">
+                {txHashes.listing && (
+                  <div>
+                    <p className="text-xs text-forest-600/60 mb-0.5">Листинг:</p>
+                    <a
+                      href={`https://explorer.solana.com/tx/${txHashes.listing}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-forest-500 hover:underline break-all"
+                    >
+                      {txHashes.listing}
+                    </a>
+                  </div>
+                )}
                 {txHashes.deposit && (
                   <div>
                     <p className="text-xs text-forest-600/60 mb-0.5">Депозит:</p>
