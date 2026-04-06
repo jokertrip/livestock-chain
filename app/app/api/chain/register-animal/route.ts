@@ -152,9 +152,8 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Register animal error:", message);
-    const serverPubkey = (() => { try { return getServerKeypair().publicKey.toBase58(); } catch { return "unknown"; } })();
     return NextResponse.json(
-      { error: "Ошибка регистрации: " + message, debug_pubkey: serverPubkey },
+      { error: "Ошибка регистрации: " + message },
       { status: 500 }
     );
   }
