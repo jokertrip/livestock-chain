@@ -37,6 +37,7 @@ export default function AnimalProfilePage() {
   });
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [chainInfo, setChainInfo] = useState<{ pda: string; exists: boolean } | null>(null);
 
   useEffect(() => {
     async function fetchAnimal() {
@@ -55,7 +56,17 @@ export default function AnimalProfilePage() {
         setLoading(false);
       }
     }
+    async function checkChain() {
+      try {
+        const res = await fetch(`/api/chain/check-animal?gov_id=${encodeURIComponent(id)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setChainInfo(data);
+        }
+      } catch { /* non-critical */ }
+    }
     fetchAnimal();
+    checkChain();
   }, [id]);
 
   function formatDate(dateStr: string) {
@@ -278,20 +289,44 @@ export default function AnimalProfilePage() {
         <h2 className="text-lg font-bold text-forest-600 mb-3">
           Блокчейн данные
         </h2>
-        <div className="space-y-2 text-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <span className="text-forest-600/60">cNFT Asset ID:</span>
-            <span className="font-mono text-xs text-forest-600/40">
-              Будет доступно после записи
-            </span>
+        {chainInfo?.exists ? (
+          <div className="space-y-2 text-sm">
+            <div className="flex flex-col gap-1">
+              <span className="text-forest-600/60">On-chain аккаунт (PDA):</span>
+              <a
+                href={`https://explorer.solana.com/address/${chainInfo.pda}?cluster=devnet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-forest-500 hover:underline break-all"
+              >
+                {chainInfo.pda}
+              </a>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-forest-600/60">cNFT метадата:</span>
+              <a
+                href={`/api/metadata/${encodeURIComponent(animal.id)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-forest-500 hover:underline"
+              >
+                Открыть JSON
+              </a>
+            </div>
+            <div className="mt-2">
+              <span className="badge-healthy">Записано на блокчейн &#10003;</span>
+            </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-            <span className="text-forest-600/60">Solana Explorer:</span>
-            <span className="font-mono text-xs text-forest-600/40">
-              Будет доступно после записи
-            </span>
+        ) : (
+          <div className="space-y-2 text-sm">
+            <p className="text-forest-600/40">
+              Животное ещё не зарегистрировано на блокчейне
+            </p>
+            <Link href="/register" className="btn-primary inline-block text-sm">
+              Зарегистрировать
+            </Link>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
