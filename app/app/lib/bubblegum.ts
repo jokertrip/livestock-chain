@@ -69,13 +69,17 @@ export async function mintAnimalCNFT(
 
   const { govId, ownerPubkey } = params;
 
+  // Metadata URI — served by our own API on Vercel
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://app-eta-self-81.vercel.app";
+  const metadataUri = `${baseUrl}/api/metadata/${encodeURIComponent(govId)}`;
+
   const result = await mintV1(umi, {
     leafOwner: publicKey(ownerPubkey),
     merkleTree: publicKey(treePubkey),
     metadata: {
       name: `Livestock #${govId}`,
       symbol: "LVST",
-      uri: "",
+      uri: metadataUri,
       sellerFeeBasisPoints: 0,
       collection: null,
       creators: [

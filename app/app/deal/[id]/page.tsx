@@ -24,6 +24,13 @@ interface Animal {
 
 type DealStatus = "active" | "funded" | "completed";
 
+interface ChainResult {
+  success: boolean;
+  tx_hash?: string;
+  explorer_url?: string;
+  error?: string;
+}
+
 function seededPrice(id: string): number {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
@@ -50,6 +57,8 @@ export default function DealPage() {
   const [error, setError] = useState("");
   const [dealStatus, setDealStatus] = useState<DealStatus>("active");
   const [processing, setProcessing] = useState(false);
+  const [txHashes, setTxHashes] = useState<Record<string, string>>({});
+  const [chainError, setChainError] = useState("");
 
   useEffect(() => {
     async function fetchAnimal() {
@@ -91,17 +100,48 @@ export default function DealPage() {
 
   async function handleBuy() {
     setProcessing(true);
-    // Simulate deposit
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setDealStatus("funded");
-    setProcessing(false);
+    setChainError("");
+    try {
+      const res = await fetch("/api/chain/deposit-funds", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gov_id: id }),
+      });
+      const data: ChainResult = await res.json();
+      if (data.success && data.tx_hash) {
+        setTxHashes((prev) => ({ ...prev, deposit: data.tx_hash! }));
+        setDealStatus("funded");
+      } else {
+        setChainError(data.error || "Ошибка депозита");
+      }
+    } catch {
+      setChainError("Ошибка сети");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   async function handleConfirm() {
     setProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setDealStatus("completed");
-    setProcessing(false);
+    setChainError("");
+    try {
+      const res = await fetch("/api/chain/confirm-sale", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ gov_id: id }),
+      });
+      const data: ChainResult = await res.json();
+      if (data.success && data.tx_hash) {
+        setTxHashes((prev) => ({ ...prev, confirm: data.tx_hash! }));
+        setDealStatus("completed");
+      } else {
+        setChainError(data.error || "Ошибка подтверждения");
+      }
+    } catch {
+      setChainError("Ошибка сети");
+    } finally {
+      setProcessing(false);
+    }
   }
 
   if (loading) {
@@ -318,18 +358,52 @@ export default function DealPage() {
             </p>
           </div>
 
-          {/* Transaction hash */}
+          {/* Chain error */}
+          {chainError && (
+            <div className="card bg-red-50 border border-red-200">
+              <p className="text-sm text-red-700">{chainError}</p>
+            </div>
+          )}
+
+          {/* Transaction hashes */}
           <div className="card bg-forest-50/50">
             <h3 className="text-sm font-semibold text-forest-600 mb-2">
-              Транзакция
+              Транзакции
             </h3>
-            <p className="text-xs text-forest-600/40 font-mono">
-              {dealStatus === "completed"
-                ? `tx_${Array.from({ length: 32 }, () =>
-                    "abcdef0123456789"[Math.floor(Math.random() * 16)]
-                  ).join("")}`
-                : "Будет доступно после записи в блокчейн"}
-            </p>
+            {Object.keys(txHashes).length > 0 ? (
+              <div className="space-y-2">
+                {txHashes.deposit && (
+                  <div>
+                    <p className="text-xs text-forest-600/60 mb-0.5">Депозит:</p>
+                    <a
+                      href={`https://explorer.solana.com/tx/${txHashes.deposit}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-forest-500 hover:underline break-all"
+                    >
+                      {txHashes.deposit}
+                    </a>
+                  </div>
+                )}
+                {txHashes.confirm && (
+                  <div>
+                    <p className="text-xs text-forest-600/60 mb-0.5">Подтверждение:</p>
+                    <a
+                      href={`https://explorer.solana.com/tx/${txHashes.confirm}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-forest-500 hover:underline break-all"
+                    >
+                      {txHashes.confirm}
+                    </a>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-forest-600/40 font-mono">
+                Будет доступно после записи в блокчейн
+              </p>
+            )}
           </div>
         </div>
       </div>
