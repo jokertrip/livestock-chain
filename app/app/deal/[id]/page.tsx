@@ -59,6 +59,7 @@ export default function DealPage() {
   const [processing, setProcessing] = useState(false);
   const [txHashes, setTxHashes] = useState<Record<string, string>>({});
   const [chainError, setChainError] = useState("");
+  const [listingPda, setListingPda] = useState("");
 
   useEffect(() => {
     async function fetchAnimal() {
@@ -84,6 +85,7 @@ export default function DealPage() {
           const data = await res.json();
           if (data.exists) {
             setDealStatus(data.status as DealStatus);
+            if (data.pda) setListingPda(data.pda);
           }
         }
       } catch { /* non-critical */ }
@@ -429,11 +431,24 @@ export default function DealPage() {
             <h3 className="text-sm font-semibold text-forest-600 mb-2">
               Транзакции
             </h3>
-            {Object.keys(txHashes).length > 0 ? (
+            {(Object.keys(txHashes).length > 0 || listingPda) ? (
               <div className="space-y-2">
+                {listingPda && (
+                  <div>
+                    <p className="text-xs text-forest-600/60 mb-0.5">Listing PDA:</p>
+                    <a
+                      href={`https://explorer.solana.com/address/${listingPda}?cluster=devnet`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-forest-500 hover:underline break-all"
+                    >
+                      {listingPda}
+                    </a>
+                  </div>
+                )}
                 {txHashes.listing && (
                   <div>
-                    <p className="text-xs text-forest-600/60 mb-0.5">Листинг:</p>
+                    <p className="text-xs text-forest-600/60 mb-0.5">TX Листинг:</p>
                     <a
                       href={`https://explorer.solana.com/tx/${txHashes.listing}?cluster=devnet`}
                       target="_blank"
@@ -446,7 +461,7 @@ export default function DealPage() {
                 )}
                 {txHashes.deposit && (
                   <div>
-                    <p className="text-xs text-forest-600/60 mb-0.5">Депозит:</p>
+                    <p className="text-xs text-forest-600/60 mb-0.5">TX Депозит:</p>
                     <a
                       href={`https://explorer.solana.com/tx/${txHashes.deposit}?cluster=devnet`}
                       target="_blank"
@@ -459,7 +474,7 @@ export default function DealPage() {
                 )}
                 {txHashes.confirm && (
                   <div>
-                    <p className="text-xs text-forest-600/60 mb-0.5">Подтверждение:</p>
+                    <p className="text-xs text-forest-600/60 mb-0.5">TX Подтверждение:</p>
                     <a
                       href={`https://explorer.solana.com/tx/${txHashes.confirm}?cluster=devnet`}
                       target="_blank"
