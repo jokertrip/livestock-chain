@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 
 interface Vaccination {
@@ -37,6 +37,38 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [txHash, setTxHash] = useState("");
+
+  // Autocomplete
+  const [allAnimals, setAllAnimals] = useState<{ id: string; breed: string; region: string }[]>([]);
+  const [suggestions, setSuggestions] = useState<{ id: string; breed: string; region: string }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetch("/api/torttulik")
+      .then((r) => r.json())
+      .then((data) => setAllAnimals(data.animals))
+      .catch(() => {});
+  }, []);
+
+  function handleInputChange(value: string) {
+    setGovId(value);
+    if (value.length >= 2 && step === "search") {
+      const q = value.toLowerCase();
+      const matches = allAnimals
+        .filter((a) => a.id.toLowerCase().includes(q) || a.breed.toLowerCase().includes(q) || a.region.toLowerCase().includes(q))
+        .slice(0, 8);
+      setSuggestions(matches);
+      setShowSuggestions(matches.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  }
+
+  function selectSuggestion(id: string) {
+    setGovId(id);
+    setShowSuggestions(false);
+  }
 
   async function handleSearch() {
     if (!govId.trim()) return;
@@ -183,28 +215,37 @@ export default function RegisterPage() {
           Шаг 1: Найти животное в реестре
         </h2>
         <p className="text-xs text-forest-600/50 mb-3">
-          Введите номер бирки из системы TORTTULIK. Примеры:{" "}
-          {["KZ-AKM-2022-000134", "KZ-KOS-2023-004782", "KZ-ALM-2024-007321"].map((id, i) => (
-            <button
-              key={id}
-              onClick={() => { setGovId(id); }}
-              className="font-mono text-forest-500 hover:underline cursor-pointer"
-              disabled={step !== "search"}
-            >
-              {id}{i < 2 ? ", " : ""}
-            </button>
-          ))}
+          Введите номер бирки из системы TORTTULIK или начните вводить для поиска
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            className="input-field flex-1"
-            placeholder="KZ-AKM-2024-000001"
-            value={govId}
-            onChange={(e) => setGovId(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            disabled={step !== "search" || loading}
-          />
+          <div className="relative flex-1">
+            <input
+              ref={inputRef}
+              type="text"
+              className="input-field w-full"
+              placeholder="Начните вводить: KZ-..."
+              value={govId}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onFocus={() => { if (govId.length >= 2 && suggestions.length > 0) setShowSuggestions(true); }}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              disabled={step !== "search" || loading}
+            />
+            {showSuggestions && (
+              <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-white border border-steppe-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {suggestions.map((s) => (
+                  <button
+                    key={s.id}
+                    onMouseDown={() => selectSuggestion(s.id)}
+                    className="w-full text-left px-4 py-2.5 hover:bg-steppe-50 transition-colors border-b border-steppe-50 last:border-0"
+                  >
+                    <span className="font-mono text-sm text-forest-600">{s.id}</span>
+                    <span className="text-xs text-forest-600/50 ml-2">{s.breed} &middot; {s.region}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             className="btn-primary shrink-0"
             onClick={handleSearch}
