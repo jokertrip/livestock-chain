@@ -77,7 +77,19 @@ export default function DealPage() {
         setLoading(false);
       }
     }
+    async function checkListing() {
+      try {
+        const res = await fetch(`/api/chain/check-listing?gov_id=${encodeURIComponent(id)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.exists) {
+            setDealStatus(data.status as DealStatus);
+          }
+        }
+      } catch { /* non-critical */ }
+    }
     fetchAnimal();
+    checkListing();
   }, [id]);
 
   function formatDate(dateStr: string) {
